@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+*.js.map
+structure.txt
+structure2.txt
+structure3.txt
+structure4.txt
+misc/
