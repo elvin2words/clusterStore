@@ -7,9 +7,13 @@
     "declaration": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "types": [
+      "node"
+    ],
     "baseUrl": ".",
     "paths": {
       "@clusterstore/contracts": [
