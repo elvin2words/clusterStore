@@ -1,9 +1,10 @@
 node_modules/
 dist/
 build/
+.vendor/
+services/*/config/runtime/
+services/*/config/certs/*.pem
+services/*/config/certs/*.crt
+services/*/config/certs/*.key
 *.js.map
-structure.txt
-structure2.txt
-structure3.txt
-structure4.txt
 misc/
