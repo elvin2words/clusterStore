@@ -1,0 +1,89 @@
+{
+  "config": {
+    "siteId": "site-alpha",
+    "clusterId": "cluster-01",
+    "aggregateCapacityKwh": 10,
+    "maxChargeCurrentPerNodeA": 20,
+    "maxDischargeCurrentPerNodeA": 20,
+    "equalizationWindowPct": 5,
+    "controlLoopIntervalMs": 1000,
+    "telemetryIntervalMs": 60000,
+    "supervisionTimeoutMs": 1500,
+    "defaultDispatchStrategy": "equal_current",
+    "startup": {
+      "voltageMatchWindowMv": 500,
+      "prechargeTimeoutMs": 3000,
+      "contactorSettleTimeoutMs": 1000,
+      "balancingTimeoutMs": 5000,
+      "balancingMaxCurrentA": 5,
+      "startupTimeoutMs": 10000,
+      "minNodesForDispatch": 2
+    },
+    "remoteCommands": {
+      "maxCommandTtlMs": 900000,
+      "maxChargeOverrideCurrentA": 20,
+      "maxDischargeOverrideCurrentA": 20,
+      "allowedRolesByType": {
+        "force_charge": [
+          "fleet_controller",
+          "service"
+        ],
+        "force_discharge": [
+          "fleet_controller",
+          "service"
+        ],
+        "set_dispatch_mode": [
+          "fleet_controller",
+          "service",
+          "operator"
+        ],
+        "set_maintenance_mode": [
+          "service",
+          "technician"
+        ],
+        "clear_fault_latch": [
+          "service",
+          "technician"
+        ]
+      }
+    }
+  },
+  "cycle": {
+    "intervalMs": 1000,
+    "runOnStart": true
+  },
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8081
+  },
+  "canBus": {
+    "kind": "state-file",
+    "statusesPath": "./runtime/statuses.json",
+    "diagnosticsPath": "./runtime/diagnostics.json",
+    "commandsPath": "./runtime/commands.json",
+    "commandHistoryPath": "./runtime/command-history.jsonl",
+    "isolatesPath": "./runtime/isolate-history.jsonl"
+  },
+  "inverter": {
+    "kind": "state-file",
+    "statePath": "./runtime/inverter-state.json",
+    "setpointPath": "./runtime/inverter-setpoint.json",
+    "setpointHistoryPath": "./runtime/inverter-setpoint-history.jsonl",
+    "prechargePath": "./runtime/precharge-history.jsonl",
+    "holdOpenPath": "./runtime/hold-open-history.jsonl"
+  },
+  "hmi": {
+    "kind": "file",
+    "snapshotPath": "./runtime/hmi-snapshot.json",
+    "alertsPath": "./runtime/hmi-alerts.jsonl"
+  },
+  "watchdog": {
+    "kind": "file",
+    "heartbeatPath": "./runtime/watchdog-heartbeat.json",
+    "failSafePath": "./runtime/watchdog-failsafe.jsonl"
+  },
+  "journal": {
+    "kind": "jsonl-file",
+    "path": "./runtime/ems-journal.jsonl"
+  }
+}

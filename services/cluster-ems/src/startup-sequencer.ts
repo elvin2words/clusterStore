@@ -173,13 +173,16 @@ export class StartupSequencer {
     }
 
     if (healthyNodes.length < this.config.startup.minNodesForDispatch) {
-      return this.failedPlan(
+      return this.planForPhase(
         timestamp,
         nodes,
         commandSequence,
         alerts,
         syntheticFaults,
-        "Not enough healthy nodes are available to safely start the cluster."
+        this.phase === "discover_nodes"
+          ? "Waiting for enough healthy nodes to begin startup."
+          : "Waiting for enough healthy nodes to continue startup.",
+        "hold_open"
       );
     }
 

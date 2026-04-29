@@ -1,0 +1,50 @@
+{
+  "bridge": {
+    "siteId": "site-alpha",
+    "clusterId": "cluster-01",
+    "maxCommandTtlMs": 900000,
+    "replayBatchSize": 50
+  },
+  "publish": {
+    "intervalMs": 1000,
+    "runOnStart": true
+  },
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8082
+  },
+  "mqtt": {
+    "kind": "mqtt-tcp",
+    "host": "127.0.0.1",
+    "port": 1883,
+    "clientId": "clusterstore-bridge-local"
+  },
+  "lte": {
+    "kind": "state-file",
+    "path": "./runtime/lte-state.json"
+  },
+  "emsApi": {
+    "baseUrl": "http://127.0.0.1:8081",
+    "timeoutMs": 5000
+  },
+  "buffer": {
+    "kind": "file",
+    "path": "./runtime/telemetry-buffer.json"
+  },
+  "scada": {
+    "kind": "file",
+    "telemetryPath": "./runtime/scada-telemetry.json",
+    "alertsPath": "./runtime/scada-alerts.jsonl"
+  },
+  "authorizer": {
+    "kind": "allow-all"
+  },
+  "commandLedger": {
+    "kind": "file",
+    "path": "./runtime/command-ledger.json"
+  },
+  "journal": {
+    "kind": "jsonl-file",
+    "path": "./runtime/bridge-journal.jsonl"
+  }
+}

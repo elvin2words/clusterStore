@@ -1,0 +1,267 @@
+{
+  "config": {
+    "siteId": "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+    "clusterId": "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}",
+    "aggregateCapacityKwh": 10,
+    "maxChargeCurrentPerNodeA": 20,
+    "maxDischargeCurrentPerNodeA": 20,
+    "equalizationWindowPct": 5,
+    "controlLoopIntervalMs": 1000,
+    "telemetryIntervalMs": 60000,
+    "supervisionTimeoutMs": 1500,
+    "defaultDispatchStrategy": "equal_current",
+    "startup": {
+      "voltageMatchWindowMv": 500,
+      "prechargeTimeoutMs": 3000,
+      "contactorSettleTimeoutMs": 1000,
+      "balancingTimeoutMs": 5000,
+      "balancingMaxCurrentA": 5,
+      "startupTimeoutMs": 10000,
+      "minNodesForDispatch": 2
+    },
+    "remoteCommands": {
+      "maxCommandTtlMs": 900000,
+      "maxChargeOverrideCurrentA": 20,
+      "maxDischargeOverrideCurrentA": 20,
+      "allowedRolesByType": {
+        "force_charge": [
+          "fleet_controller",
+          "service"
+        ],
+        "force_discharge": [
+          "fleet_controller",
+          "service"
+        ],
+        "set_dispatch_mode": [
+          "fleet_controller",
+          "service",
+          "operator"
+        ],
+        "set_maintenance_mode": [
+          "service",
+          "technician"
+        ],
+        "clear_fault_latch": [
+          "service",
+          "technician"
+        ]
+      }
+    }
+  },
+  "cycle": {
+    "intervalMs": 1000,
+    "runOnStart": true
+  },
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8081
+  },
+  "canBus": {
+    "kind": "command",
+    "readStatuses": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-can-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.can-adapter.json",
+        "read-statuses",
+        "--site",
+        "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+        "--cluster",
+        "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}"
+      ],
+      "timeoutMs": 3000
+    },
+    "readDiagnostics": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-can-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.can-adapter.json",
+        "read-diagnostics",
+        "--site",
+        "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+        "--cluster",
+        "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}"
+      ],
+      "timeoutMs": 3000
+    },
+    "writeCommands": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-can-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.can-adapter.json",
+        "write-commands",
+        "--site",
+        "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+        "--cluster",
+        "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}"
+      ],
+      "timeoutMs": 3000
+    },
+    "isolateNode": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-can-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.can-adapter.json",
+        "isolate-node",
+        "--site",
+        "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+        "--cluster",
+        "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}"
+      ],
+      "timeoutMs": 3000
+    }
+  },
+  "inverter": {
+    "kind": "modbus-tcp",
+    "host": "${CLUSTERSTORE_MODBUS_HOST:-192.0.2.40}",
+    "port": "${CLUSTERSTORE_MODBUS_PORT:-502}",
+    "unitId": "${CLUSTERSTORE_MODBUS_UNIT_ID:-1}",
+    "timeoutMs": 3000,
+    "stateMap": {
+      "acInputVoltageV": {
+        "address": 1,
+        "type": "u16",
+        "scale": 10
+      },
+      "acInputFrequencyHz": {
+        "address": 2,
+        "type": "u16",
+        "scale": 10
+      },
+      "acOutputVoltageV": {
+        "address": 3,
+        "type": "u16",
+        "scale": 10
+      },
+      "acOutputFrequencyHz": {
+        "address": 4,
+        "type": "u16",
+        "scale": 10
+      },
+      "acOutputLoadW": {
+        "address": 5,
+        "type": "u16"
+      },
+      "dcBusVoltageV": {
+        "address": 6,
+        "type": "u16",
+        "scale": 10
+      },
+      "gridAvailable": {
+        "address": 7,
+        "type": "bool"
+      },
+      "solarGenerationW": {
+        "address": 8,
+        "type": "u16"
+      },
+      "availableChargeCurrentA": {
+        "address": 9,
+        "type": "u16",
+        "scale": 10
+      },
+      "requestedDischargeCurrentA": {
+        "address": 10,
+        "type": "u16",
+        "scale": 10
+      },
+      "exportAllowed": {
+        "address": 11,
+        "type": "bool"
+      },
+      "tariffBand": {
+        "address": 12,
+        "type": "tariff-band",
+        "values": {
+          "0": "cheap",
+          "1": "normal",
+          "2": "expensive"
+        },
+        "defaultValue": "normal"
+      },
+      "meteredSitePowerW": {
+        "address": 13,
+        "type": "u16"
+      }
+    },
+    "setpointMap": {
+      "operatingMode": {
+        "address": 100,
+        "type": "enum",
+        "values": {
+          "idle": 0,
+          "charge": 1,
+          "discharge": 2,
+          "grid_support": 3
+        }
+      },
+      "aggregateChargeCurrentA": {
+        "address": 101,
+        "type": "u16",
+        "scale": 10
+      },
+      "aggregateDischargeCurrentA": {
+        "address": 102,
+        "type": "u16",
+        "scale": 10
+      },
+      "exportLimitW": {
+        "address": 103,
+        "type": "u16"
+      },
+      "prechargeTargetVoltageV": {
+        "address": 104,
+        "type": "u16",
+        "scale": 10
+      },
+      "holdOpenBus": {
+        "address": 105,
+        "type": "bool",
+        "trueValue": 1,
+        "falseValue": 0
+      }
+    }
+  },
+  "hmi": {
+    "kind": "file",
+    "snapshotPath": "./runtime/hmi-snapshot.json",
+    "alertsPath": "./runtime/hmi-alerts.jsonl"
+  },
+  "watchdog": {
+    "kind": "command",
+    "kick": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-watchdog-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.watchdog-adapter.json",
+        "kick"
+      ],
+      "timeoutMs": 2000
+    },
+    "triggerFailSafe": {
+      "command": "node",
+      "cwd": "../../..",
+      "args": [
+        "scripts/clusterstore-watchdog-adapter.mjs",
+        "--config",
+        "services/cluster-ems/config/example.watchdog-adapter.json",
+        "trigger-failsafe"
+      ],
+      "timeoutMs": 2000
+    }
+  },
+  "journal": {
+    "kind": "jsonl-file",
+    "path": "./runtime/ems-journal.jsonl"
+  }
+}

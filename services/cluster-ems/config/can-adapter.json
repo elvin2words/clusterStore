@@ -1,0 +1,7 @@
+{
+  "statusesPath": "${CLUSTERSTORE_CAN_STATUSES_PATH:-./runtime/statuses.json}",
+  "diagnosticsPath": "${CLUSTERSTORE_CAN_DIAGNOSTICS_PATH:-./runtime/diagnostics.json}",
+  "commandsPath": "${CLUSTERSTORE_CAN_COMMANDS_PATH:-./runtime/commands.json}",
+  "commandHistoryPath": "${CLUSTERSTORE_CAN_COMMAND_HISTORY_PATH:-./runtime/command-history.jsonl}",
+  "isolatesPath": "${CLUSTERSTORE_CAN_ISOLATES_PATH:-./runtime/isolates.jsonl}"
+}

@@ -1,0 +1,5 @@
+function(cs_read_version OUTPUT_VAR VERSION_FILE)
+    file(READ "${VERSION_FILE}" _cs_version_text)
+    string(STRIP "${_cs_version_text}" _cs_version_text)
+    set(${OUTPUT_VAR} "${_cs_version_text}" PARENT_SCOPE)
+endfunction()

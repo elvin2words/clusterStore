@@ -93,14 +93,13 @@ function unwrapCommandPayload(payload: string): RemoteCommand {
     "payload" in parsed &&
     "schemaVersion" in parsed &&
     "sentAt" in parsed
-      ? (parsed as MqttEnvelope<unknown>).payload
+      ? (parsed as unknown as MqttEnvelope<unknown>).payload
       : parsed;
-
   if (!isRecord(envelopePayload)) {
     throw new Error("Received command payload is not an object.");
   }
 
-  return envelopePayload as RemoteCommand;
+  return envelopePayload as unknown as RemoteCommand;
 }
 
 export class UtilityCoreBridgeService {

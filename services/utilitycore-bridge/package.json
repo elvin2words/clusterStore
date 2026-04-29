@@ -2,6 +2,28 @@
   "name": "@clusterstore/utilitycore-bridge",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "main": "./dist/services/utilitycore-bridge/src/index.js",
+  "types": "./dist/services/utilitycore-bridge/src/index.d.ts",
+  "bin": {
+    "clusterstore-bridge": "./dist/services/utilitycore-bridge/src/daemon.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/services/utilitycore-bridge/src/index.d.ts",
+      "import": "./dist/services/utilitycore-bridge/src/index.js"
+    },
+    "./daemon": {
+      "import": "./dist/services/utilitycore-bridge/src/daemon.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/services/utilitycore-bridge/src/daemon.js --config config/example.daemon.json"
+  },
+  "dependencies": {
+    "@clusterstore/contracts": "0.1.0",
+    "@clusterstore/cluster-ems": "0.1.0"
+  }
 }
-

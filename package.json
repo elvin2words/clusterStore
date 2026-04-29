@@ -1,13 +1,39 @@
 {
   "name": "clusterstore-platform",
   "private": true,
+  "packageManager": "npm@11.9.0",
+  "engines": {
+    "node": "25.6.1",
+    "npm": "11.9.0"
+  },
+  "volta": {
+    "node": "25.6.1",
+    "npm": "11.9.0"
+  },
   "workspaces": [
     "packages/*",
     "services/*"
   ],
   "scripts": {
+    "audit:full": "powershell -ExecutionPolicy Bypass -File scripts/full-audit.ps1",
+    "build": "tsc -p packages/contracts/tsconfig.json && tsc -p services/cluster-ems/tsconfig.json && tsc -p services/utilitycore-bridge/tsconfig.json",
     "check": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p services/cluster-ems/tsconfig.json && tsc --noEmit -p services/utilitycore-bridge/tsconfig.json",
     "test": "node --experimental-strip-types tests/all.test.mjs",
-    "sim:smoke": "node --experimental-strip-types scripts/smoke-simulator.mjs"
+    "test:firmware-binding": "node tests/firmware-binding.test.mjs",
+    "test:overlay-adapter": "node --experimental-strip-types tests/overlay-bms-adapter.test.mjs",
+    "sim:smoke": "node --experimental-strip-types scripts/smoke-simulator.mjs",
+    "firmware:check": "powershell -ExecutionPolicy Bypass -File firmware/clusterstore-firmware/scripts/check-firmware-env.ps1",
+    "firmware:build:arm": "powershell -ExecutionPolicy Bypass -File firmware/clusterstore-firmware/scripts/build-g474-hal.ps1",
+    "mqtt:mosquitto:check": "powershell -ExecutionPolicy Bypass -File scripts/local-mosquitto.ps1 -CheckOnly",
+    "mqtt:mosquitto:run": "powershell -ExecutionPolicy Bypass -File scripts/local-mosquitto.ps1",
+    "smoke:stack": "powershell -ExecutionPolicy Bypass -File scripts/smoke-daemon-stack.ps1",
+    "check:live-readiness": "node scripts/live-readiness-check.mjs --ems services/cluster-ems/config/example.live.daemon.json --bridge services/utilitycore-bridge/config/example.secure.daemon.json",
+    "start:ems": "node services/cluster-ems/dist/services/cluster-ems/src/daemon.js --config services/cluster-ems/config/example.daemon.json",
+    "start:bridge": "node services/utilitycore-bridge/dist/services/utilitycore-bridge/src/daemon.js --config services/utilitycore-bridge/config/example.daemon.json"
+  },
+  "devDependencies": {
+    "@types/node": "24.5.2",
+    "tsx": "4.20.5",
+    "typescript": "5.9.2"
   }
 }

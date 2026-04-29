@@ -1,0 +1,4 @@
+{
+  "heartbeatPath": "${CLUSTERSTORE_WATCHDOG_HEARTBEAT_PATH:-./runtime/watchdog-heartbeat.json}",
+  "failSafePath": "${CLUSTERSTORE_WATCHDOG_FAILSAFE_PATH:-./runtime/watchdog-failsafe.jsonl}"
+}

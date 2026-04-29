@@ -3,6 +3,8 @@ export * from "./ems-controller.ts";
 export * from "./dispatch.ts";
 export * from "./fault-manager.ts";
 export * from "./startup-sequencer.ts";
+export * from "./runtime.ts";
+export * from "./adapters/bms-adapter.ts";
 export * from "./adapters/can-bus.ts";
 export * from "./adapters/hmi.ts";
 export * from "./adapters/journal.ts";

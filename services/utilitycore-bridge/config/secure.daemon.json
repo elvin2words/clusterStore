@@ -1,0 +1,66 @@
+{
+  "bridge": {
+    "siteId": "${CLUSTERSTORE_SITE_ID:-site-alpha}",
+    "clusterId": "${CLUSTERSTORE_CLUSTER_ID:-cluster-01}",
+    "maxCommandTtlMs": "${CLUSTERSTORE_MAX_COMMAND_TTL_MS:-900000}",
+    "replayBatchSize": "${CLUSTERSTORE_REPLAY_BATCH_SIZE:-50}"
+  },
+  "publish": {
+    "intervalMs": 1000,
+    "runOnStart": true
+  },
+  "http": {
+    "host": "127.0.0.1",
+    "port": "${CLUSTERSTORE_BRIDGE_HTTP_PORT:-8082}"
+  },
+  "mqtt": {
+    "kind": "mqtt-tcp",
+    "host": "${CLUSTERSTORE_MQTT_HOST:-broker.example.net}",
+    "port": "${CLUSTERSTORE_MQTT_PORT:-8883}",
+    "clientId": "${CLUSTERSTORE_MQTT_CLIENT_ID:-clusterstore-bridge-site-alpha}",
+    "username": "${CLUSTERSTORE_MQTT_USERNAME:-site-alpha-bridge}",
+    "password": "${CLUSTERSTORE_MQTT_PASSWORD:-replace-me}",
+    "tls": {
+      "enabled": true,
+      "servername": "${CLUSTERSTORE_MQTT_SERVERNAME:-broker.example.net}",
+      "rejectUnauthorized": true,
+      "caCertPath": "${CLUSTERSTORE_MQTT_CA_CERT_PATH:-./certs/mqtt-ca.pem}"
+    }
+  },
+  "lte": {
+    "kind": "http-json",
+    "url": "${CLUSTERSTORE_MODEM_STATE_URL:-http://127.0.0.1:9001/modem/state}",
+    "timeoutMs": "${CLUSTERSTORE_MODEM_TIMEOUT_MS:-3000}"
+  },
+  "emsApi": {
+    "baseUrl": "${CLUSTERSTORE_EMS_BASE_URL:-http://127.0.0.1:8081}",
+    "timeoutMs": "${CLUSTERSTORE_EMS_TIMEOUT_MS:-5000}"
+  },
+  "buffer": {
+    "kind": "file",
+    "path": "./runtime/telemetry-buffer.json"
+  },
+  "scada": {
+    "kind": "file",
+    "telemetryPath": "./runtime/scada-telemetry.json",
+    "alertsPath": "./runtime/scada-alerts.jsonl"
+  },
+  "authorizer": {
+    "kind": "policy",
+    "allowedRoles": [
+      "fleet_controller",
+      "service"
+    ],
+    "allowedRequesters": [
+      "${CLUSTERSTORE_ALLOWED_REQUESTER:-utilitycore@site-alpha}"
+    ]
+  },
+  "commandLedger": {
+    "kind": "file",
+    "path": "./runtime/command-ledger.json"
+  },
+  "journal": {
+    "kind": "jsonl-file",
+    "path": "./runtime/bridge-journal.jsonl"
+  }
+}

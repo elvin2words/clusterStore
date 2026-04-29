@@ -2,6 +2,27 @@
   "name": "@clusterstore/cluster-ems",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "main": "./dist/services/cluster-ems/src/index.js",
+  "types": "./dist/services/cluster-ems/src/index.d.ts",
+  "bin": {
+    "clusterstore-ems": "./dist/services/cluster-ems/src/daemon.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/services/cluster-ems/src/index.d.ts",
+      "import": "./dist/services/cluster-ems/src/index.js"
+    },
+    "./daemon": {
+      "import": "./dist/services/cluster-ems/src/daemon.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/services/cluster-ems/src/daemon.js --config config/example.daemon.json"
+  },
+  "dependencies": {
+    "@clusterstore/contracts": "0.1.0"
+  }
 }
-
