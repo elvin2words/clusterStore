@@ -21,7 +21,7 @@ ClusterStore is the software-defined control and operations layer for a clustere
 
 The stack has three core runtime layers:
 
-1. Node-level firmware on each PowerHive MCU
+1. Node-level firmware or overlay adapters at each node edge
 2. Cluster EMS on the cluster controller or DIN rail industrial PC
 3. Communications and fleet bridge into UtilityCore / MAAP
 
@@ -29,7 +29,14 @@ The stack has three core runtime layers:
 
 ### 1. Node-Level Firmware
 
-Each PowerHive node is responsible for:
+ClusterStore supports two node deployment modes that converge at the Cluster EMS layer:
+
+- `Mode A: Native node`
+  An STM32G474RET6 node runs the portable firmware core directly on ClusterStore hardware.
+- `Mode B: Overlay node`
+  An adapter wraps an existing BESS asset such as Victron, Pylontech, Growatt, or Deye through its native Modbus or CAN-BMS protocol and exposes ClusterStore node semantics upward.
+
+For the native path, each PowerHive node is responsible for:
 
 - Local BMS protection and enforcement
 - Local MPPT or converter control
@@ -81,6 +88,8 @@ The UtilityCore bridge is the upward integration layer. It is responsible for:
 - Cluster-aware state machine
 - EMS supervision timeout fallback
 - Node isolation support
+- Dual-slot boot control and non-volatile event journaling on native nodes
+- Adapter normalization for overlay nodes so existing BESS assets can participate in the same EMS control model
 
 ### Cluster EMS Capabilities
 
@@ -127,7 +136,7 @@ The repository is not yet production-ready. It currently represents a strong arc
 
 The biggest risks are no longer the original contract and startup skeleton problems. The biggest remaining risks are:
 
-1. Hardware binding and persistent storage
+1. Hardware binding and convergence between the new portable firmware core and the older STM32 runtime path
 2. Production-grade security provisioning and credential lifecycle
 3. Billing-grade metering and reconciliation
 4. HIL validation and field commissioning workflows
@@ -147,6 +156,7 @@ The biggest risks are no longer the original contract and startup skeleton probl
 3. EMS supervision timeout handling is centralized in configuration, but the firmware-side default still needs to be bound to site configuration at deployment time.
 4. Aggregate SoC and power accounting now prefer fresh-node data, preserve the last good aggregate snapshot, and prefer site metering when available, but billing-grade accuracy still requires calibrated meter integration and long-horizon reconciliation.
 5. Firmware wire serialization is explicit and no longer relies on raw structs, but the STM32 target build and HIL validation still need to prove the implementation on real hardware.
+6. The new portable firmware core now host-builds and passes tests, but the native STM32 images still link through the older `firmware/node-firmware` runtime path, so target/runtime convergence is still outstanding.
 
 ### Medium Findings
 
@@ -167,13 +177,16 @@ The biggest risks are no longer the original contract and startup skeleton probl
 - OTA candidate, trial, confirm, and rollback state tracking
 - Event journal hooks for non-volatile persistence
 - Maintenance and service lockout flows in the node state machine and status flags
+- A portable native-node firmware workspace scaffold under `firmware/clusterstore-firmware`
+- Host-testable boot control, CRC32, flash journal, and platform vtable modules aligned to the STM32G474 memory map
 
 ### Remaining Node Firmware Production Work
 
-- Bind the controller outputs to real STM32 HAL drivers for CAN, GPIO contactors, ADC telemetry, and watchdog handling
-- Persist the event journal and OTA slot metadata in actual non-volatile storage
-- Add a board-specific bootloader implementation that consumes the OTA manager state
-- Add unit tests or HIL tests around contactor timing, stale-command expiry, and rollback behavior
+- Bind the portable firmware core to the real STM32G474 BSP for FDCAN, GPIO contactors, INA228/current sensing, ADC telemetry, and IWDG handling
+- Collapse the duplicated native-node runtime so the code validated in `firmware/clusterstore-firmware/lib/` is the same code linked into the STM32 images
+- Add the board bootloader and node application images on top of the converged portable workspace
+- Build the first CAN-only bench with a NUCLEO-G474RE and USB-CAN adapter
+- Add overlay-node adapters for Victron, Pylontech, Growatt, and Deye protocols where early commercial deployments benefit from reusing existing BESS hardware
 
 ### Cluster EMS Gaps
 
@@ -349,11 +362,13 @@ These are the areas that could make ClusterStore differentiated in market terms.
 
 ## Immediate TODO Actions
 
-1. Bind the node controller and EMS abstractions to real CAN, GPIO, watchdog, modem, and Modbus hardware adapters
-2. Replace in-memory queues and journals with persistent controller storage and replay checkpoints
-3. Add secure device provisioning, credential rotation, and signed OTA artifact handling
-4. Stand up HIL coverage for contactor sequencing, stale-command fallback, modem outages, and controller reboot recovery
-5. Build commissioning and service workflows that exercise the lockout, diagnostics, and rollback paths end to end
+1. Import the STM32Cube G4 `Drivers/` tree and produce the first HAL-backed ARM build for `cs_can_bench_g474`
+2. Converge the native STM32 app and bootloader targets onto the new portable firmware modules instead of the older duplicated runtime path
+3. Replace in-memory queues and journals with persistent controller storage and replay checkpoints
+4. Add secure device provisioning, credential rotation, and signed OTA artifact handling
+5. Stand up HIL coverage for contactor sequencing, stale-command fallback, modem outages, and controller reboot recovery
+6. Build commissioning and service workflows that exercise the lockout, diagnostics, and rollback paths end to end
+7. Stand up overlay-node adapters so early deployments can supervise existing BESS assets while the PowerHive-native path matures
 
 ## Source Documents
 

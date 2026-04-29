@@ -6,10 +6,10 @@ ClusterStore has three software layers that operate as one coordinated system:
 
 ```mermaid
 flowchart LR
-    subgraph NodeLayer["PowerHive Nodes"]
-        N1["Node Firmware (STM32)"]
-        N2["Node Firmware (STM32)"]
-        N3["Node Firmware (STM32)"]
+    subgraph NodeLayer["Node Edge Layer"]
+        N1["Native Node (STM32G474)"]
+        N2["Native Node (STM32G474)"]
+        N3["Overlay Node Adapter (Victron / Pylontech / Growatt / Deye)"]
     end
 
     subgraph Controller["Cluster Controller"]
@@ -42,7 +42,12 @@ flowchart LR
 
 ### 1. Node-Level Firmware
 
-Each PowerHive node remains responsible for:
+ClusterStore supports two node-edge modes:
+
+- Native STM32G474 nodes that run the portable firmware core directly.
+- Overlay nodes that normalize existing BESS assets through Modbus or CAN-BMS adapters.
+
+For the native path, each PowerHive node remains responsible for:
 
 - Battery protection and BMS enforcement.
 - MPPT and local power conversion loops.
@@ -54,6 +59,14 @@ Cluster-specific additions in this repository:
 - Shared CAN message definitions.
 - Cluster-aware node operating states.
 - Supervision timeout behavior that returns the node to standalone-safe logic.
+- Portable boot-control, flash journal, and platform-vtable modules under `firmware/clusterstore-firmware/`.
+
+### Current Implementation Status
+
+- The portable firmware modules under `firmware/clusterstore-firmware/lib/` now build and pass host-side validation on Windows.
+- The STM32G474 BSP, bench image, bootloader image, and native node image targets exist and configure for ARM builds.
+- The HAL-backed target build still waits on the real STM32Cube `Drivers/` tree.
+- The native STM32 app and bootloader targets still bridge through the older `firmware/node-firmware` runtime instead of running directly on the new host-validated portable modules.
 
 ### 2. Cluster EMS
 
@@ -123,4 +136,3 @@ These are important gaps that were not explicit in the original pillar notes and
 - Rich diagnostics such as cell-level voltages will need segmented multi-frame transport or CAN FD.
 - Remote commands should always have an expiry time, an acknowledgement topic, and a source identity.
 - UtilityCore telemetry should be versioned so dashboards and analytics do not break on schema evolution.
-
