@@ -51,8 +51,12 @@ if(CS_G474_USE_HAL)
         PRIVATE
             cs_can_bench_runtime
             cs_g474_app_support
+            cs_bsp_g474
             cs_cube_g474_generated
     )
+    if(TARGET cs_g474_syscalls)
+        target_link_libraries(cs_can_bench_g474 PRIVATE cs_g474_syscalls)
+    endif()
     if(NOT MSVC)
         target_compile_options(cs_can_bench_g474 PRIVATE
             -ffunction-sections
@@ -74,8 +78,12 @@ if(CS_G474_USE_HAL AND TARGET cs_native_node_runtime)
         PRIVATE
             cs_native_node_runtime
             cs_g474_app_support
+            cs_bsp_g474
             cs_cube_g474_generated
     )
+    if(TARGET cs_g474_syscalls)
+        target_link_libraries(cs_native_node_g474_slot_a PRIVATE cs_g474_syscalls)
+    endif()
     if(NOT MSVC)
         target_compile_options(cs_native_node_g474_slot_a PRIVATE
             -ffunction-sections
@@ -95,8 +103,12 @@ if(CS_G474_USE_HAL AND TARGET cs_native_node_runtime)
         PRIVATE
             cs_native_node_runtime
             cs_g474_app_support
+            cs_bsp_g474
             cs_cube_g474_generated
     )
+    if(TARGET cs_g474_syscalls)
+        target_link_libraries(cs_native_node_g474_slot_b PRIVATE cs_g474_syscalls)
+    endif()
     if(NOT MSVC)
         target_compile_options(cs_native_node_g474_slot_b PRIVATE
             -ffunction-sections

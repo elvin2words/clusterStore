@@ -6,7 +6,12 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-option(CS_BUILD_TESTS "Build host-side firmware unit tests" ON)
+set(CS_BUILD_TESTS_DEFAULT ON)
+if(CMAKE_CROSSCOMPILING)
+    set(CS_BUILD_TESTS_DEFAULT OFF)
+endif()
+
+option(CS_BUILD_TESTS "Build host-side firmware unit tests" ${CS_BUILD_TESTS_DEFAULT})
 option(CS_BUILD_STM32G474_BSP "Build the STM32G474 BSP layer" ON)
 option(CS_G474_USE_HAL "Compile the STM32G474 BSP against STM32Cube HAL" OFF)
 option(CS_BUILD_CAN_BENCH_APP "Build the STM32G474 CAN-only bench image" OFF)
@@ -126,10 +131,17 @@ if(CS_BUILD_NATIVE_NODE_APP OR CS_BUILD_BOOTLOADER)
         )
         target_compile_definitions(cs_cluster_node_firmware_stm32
             PUBLIC
+                STM32G474xx
+                USE_HAL_DRIVER
                 CLUSTER_STM32_HAL_HEADER=\"stm32g4xx_hal.h\"
                 CLUSTER_STM32_CMSIS_HEADER=\"stm32g474xx.h\"
         )
-        target_compile_definitions(cs_cluster_bridge_g474 PUBLIC CS_G474_USE_HAL=1)
+        target_compile_definitions(cs_cluster_bridge_g474
+            PUBLIC
+                CS_G474_USE_HAL=1
+                STM32G474xx
+                USE_HAL_DRIVER
+        )
         target_include_directories(cs_cluster_bridge_g474
             PUBLIC
                 "${CMAKE_CURRENT_SOURCE_DIR}/bsp/stm32g474/cube_generated/Inc"

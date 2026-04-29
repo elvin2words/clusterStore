@@ -16,8 +16,12 @@ if(CS_G474_USE_HAL AND TARGET cs_cluster_bridge_g474)
             cs_cluster_node_firmware_core
             cs_cluster_node_firmware_stm32
             cs_g474_app_support
+            cs_bsp_g474
             cs_cube_g474_generated
     )
+    if(TARGET cs_g474_syscalls)
+        target_link_libraries(cs_bootloader_g474 PRIVATE cs_g474_syscalls)
+    endif()
     if(NOT MSVC)
         target_compile_options(cs_bootloader_g474 PRIVATE
             -ffunction-sections

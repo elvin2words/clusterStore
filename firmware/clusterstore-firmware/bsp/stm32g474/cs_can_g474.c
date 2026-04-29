@@ -95,14 +95,7 @@ static cs_status_t cs_can_g474_apply_default_timing(cs_g474_can_t *can_bus) {
     handle->Init.DataTimeSeg2 = 1U;
     handle->Init.StdFiltersNbr = 1U;
     handle->Init.ExtFiltersNbr = 1U;
-    handle->Init.RxFifo0ElmtsNbr = 16U;
-    handle->Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-    handle->Init.RxBuffersNbr = 0U;
-    handle->Init.TxEventsNbr = 0U;
-    handle->Init.TxBuffersNbr = 0U;
-    handle->Init.TxFifoQueueElmtsNbr = 16U;
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
-    handle->Init.TxElmtSize = FDCAN_DATA_BYTES_8;
     return HAL_FDCAN_Init(handle) == HAL_OK ? CS_STATUS_OK : CS_STATUS_ERROR;
 }
 
