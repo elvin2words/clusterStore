@@ -14,6 +14,11 @@ typedef struct {
     uint32_t metadata_size_bytes;
     uint32_t journal_size_bytes;
     uint32_t slot_size_bytes;
+    uint32_t bootloader_address;
+    uint32_t slot_a_address;
+    uint32_t slot_b_address;
+    uint32_t metadata_address;
+    uint32_t journal_address;
 } cluster_flash_layout_config_t;
 
 typedef struct {
@@ -23,6 +28,7 @@ typedef struct {
     uint32_t metadata_address;
     uint32_t journal_address;
     uint32_t end_address;
+    uint32_t bootloader_size_bytes;
     uint32_t slot_size_bytes;
     uint32_t metadata_size_bytes;
     uint32_t journal_size_bytes;
