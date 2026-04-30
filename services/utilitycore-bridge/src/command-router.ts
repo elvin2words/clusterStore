@@ -68,8 +68,6 @@ export function validateRemoteCommand(
         target.nodeIds.some((nodeId) => typeof nodeId !== "string" || nodeId.length === 0)
       ) {
         issues.push("target.nodeIds must be an array of non-empty node ids.");
-      } else if (target.nodeIds.length > 0) {
-        issues.push("Per-node targeting is not yet supported by this bridge.");
       }
     }
   }

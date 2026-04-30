@@ -690,6 +690,16 @@ export class UtilityCoreBridgeDaemon {
       return;
     }
 
+    if (
+      this.config.authorizer.kind === "allow-all" &&
+      (this.config.mqtt.tls?.enabled || this.config.mqtt.username || this.config.mqtt.password)
+    ) {
+      throw new Error(
+        "AllowAllAuthorizer cannot be used with an authenticated or TLS MQTT connection. " +
+          "Set authorizer.kind to 'policy' with allowedRoles and allowedRequesters."
+      );
+    }
+
     this.state.running = true;
     this.state.startedAt = this.clock.now().toISOString();
     await new Promise<void>((resolvePromise, rejectPromise) => {

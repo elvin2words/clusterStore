@@ -11,6 +11,19 @@ target_link_libraries(cs_flash_sim
         cs_cluster_platform
 )
 
+add_library(cluster_platform_sim STATIC
+    fixtures/cluster_platform_sim.c
+)
+target_include_directories(cluster_platform_sim
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
+)
+target_link_libraries(cluster_platform_sim
+    PUBLIC
+        cs_cluster_node_firmware_core
+)
+
 add_executable(test_boot_control
     test_boot_control.c
 )
@@ -54,3 +67,23 @@ target_link_libraries(test_g474_bsp
         cs_bsp_g474
 )
 add_test(NAME test_g474_bsp COMMAND test_g474_bsp)
+
+add_executable(test_node_boot_control
+    test_node_boot_control.c
+)
+target_link_libraries(test_node_boot_control
+    PRIVATE
+        cs_cluster_node_firmware_core
+        cluster_platform_sim
+)
+add_test(NAME test_node_boot_control COMMAND test_node_boot_control)
+
+add_executable(test_node_persistent_state
+    test_node_persistent_state.c
+)
+target_link_libraries(test_node_persistent_state
+    PRIVATE
+        cs_cluster_node_firmware_core
+        cluster_platform_sim
+)
+add_test(NAME test_node_persistent_state COMMAND test_node_persistent_state)

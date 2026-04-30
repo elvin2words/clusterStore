@@ -71,7 +71,7 @@ if(CS_BUILD_STM32G474_BSP OR CS_BUILD_TESTS OR CS_BUILD_CAN_BENCH_APP OR
     add_subdirectory(bsp/stm32g474)
 endif()
 
-if(CS_BUILD_NATIVE_NODE_APP OR CS_BUILD_BOOTLOADER)
+if(CS_BUILD_NATIVE_NODE_APP OR CS_BUILD_BOOTLOADER OR CS_BUILD_TESTS)
     add_library(cs_cluster_node_firmware_core STATIC
         ../node-firmware/src/cluster_boot_control.c
         ../node-firmware/src/cluster_bootloader_runtime.c
@@ -93,7 +93,9 @@ if(CS_BUILD_NATIVE_NODE_APP OR CS_BUILD_BOOTLOADER)
         PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/../node-firmware/include"
     )
+endif()
 
+if(CS_BUILD_NATIVE_NODE_APP OR CS_BUILD_BOOTLOADER)
     add_library(cs_cluster_node_firmware_stm32 STATIC
         ../node-firmware/src/cluster_stm32_boot.c
         ../node-firmware/src/cluster_stm32_hal.c

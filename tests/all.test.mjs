@@ -408,7 +408,7 @@ test("Bridge command flow rejects unsafe EMS commands after accepted transport v
   assert.deepEqual(acknowledgements, ["accepted", "rejected"]);
 });
 
-test("Bridge rejects per-node commands until targeted dispatch is implemented", async () => {
+test("Bridge routes per-node targeted commands to the EMS", async () => {
   const runtime = createBridgeRuntime();
   await runtime.bridge.bindCommandSubscription();
 
@@ -442,10 +442,9 @@ test("Bridge rejects per-node commands until targeted dispatch is implemented", 
     JSON.stringify(wrapCommand(runtime.clock.now().toISOString(), command))
   );
 
-  assert.deepEqual(runtime.commandLedger.acks.map((ack) => ack.status), ["rejected"]);
-  assert.match(
-    runtime.commandLedger.acks[0].reason ?? "",
-    /Per-node targeting is not yet supported/
+  assert.deepEqual(
+    runtime.commandLedger.acks.map((ack) => ack.status),
+    ["accepted", "completed"]
   );
 });
 

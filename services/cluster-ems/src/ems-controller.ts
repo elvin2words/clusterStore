@@ -66,6 +66,7 @@ export class ClusterEmsController {
         direction: "charge" | "discharge";
         currentA: number;
         expiresAt: string;
+        targetNodeIds?: string[];
       }
     | undefined;
   private readonly faultManager = new FaultManager();
@@ -277,7 +278,11 @@ export class ClusterEmsController {
         this.remoteOverride = {
           direction: command.type === "force_charge" ? "charge" : "discharge",
           currentA,
-          expiresAt: command.expiresAt
+          expiresAt: command.expiresAt,
+          targetNodeIds:
+            command.target.nodeIds && command.target.nodeIds.length > 0
+              ? command.target.nodeIds
+              : undefined
         };
         break;
       }
@@ -318,10 +323,6 @@ export class ClusterEmsController {
 
     if (command.target.clusterId !== this.dependencies.config.clusterId) {
       issues.push("Command target cluster does not match this controller.");
-    }
-
-    if ((command.target.nodeIds?.length ?? 0) > 0) {
-      issues.push("Per-node targeting is not yet supported by this controller.");
     }
 
     if (command.sequence <= this.lastAcceptedRemoteSequence) {
@@ -420,11 +421,15 @@ export class ClusterEmsController {
 
     const remoteOverride = this.activeRemoteOverride();
     if (remoteOverride) {
+      const targetNodes =
+        remoteOverride.targetNodeIds && remoteOverride.targetNodeIds.length > 0
+          ? nodes.filter((node) => remoteOverride.targetNodeIds!.includes(node.nodeId))
+          : nodes;
       return allocateCurrent({
         strategy: "equal_current",
         direction: remoteOverride.direction,
         availableCurrentA: remoteOverride.currentA,
-        nodes,
+        nodes: targetNodes,
         maxCurrentPerNodeA:
           remoteOverride.direction === "charge"
             ? this.dependencies.config.maxChargeCurrentPerNodeA
@@ -619,6 +624,7 @@ export class ClusterEmsController {
     | {
         direction: "charge" | "discharge";
         currentA: number;
+        targetNodeIds?: string[];
       }
     | undefined {
     if (!this.remoteOverride) {

@@ -1,6 +1,6 @@
 # Target-State Audit
 
-Date: `2026-04-29`
+Date: `2026-04-29` _(last updated 2026-04-29 — reflects all committed work as of this date)_
 
 This audit compares the current repo against what ClusterStore is supposed to be: a controller-ready clustered BESS platform with a runnable EMS, a runnable UtilityCore bridge, a reproducible native STM32 firmware path, and a practical deployment path into real CAN, Modbus, MQTT, LTE, and cloud environments.
 
@@ -163,3 +163,29 @@ The remaining blockers are no longer "missing implementation" blockers. They are
 - real certificates
 - real host software installation
 - real hardware commissioning
+
+---
+
+## Changes Since Initial Audit
+
+The following items were completed after this audit was first written and are now reflected in the committed baseline:
+
+### Completed
+
+1. **node-firmware new modules committed** — `cluster_bootloader_runtime`, `cluster_node_runtime`, `cluster_persistent_state`, `cluster_stm32_boot`, `cluster_stm32_hal` added
+2. **clusterstore-firmware BSP fully wired** — STM32Cube G4 Drivers tree imported, `cs_syscalls.c` bare-metal stubs added, `build-g474-hal.ps1` script committed, CMakeLists updated across all targets
+3. **ARM toolchain fixed** — `arm-none-eabi.cmake` updated, clean-configure now default behavior
+4. **HAL config and generated files updated** — `stm32g4xx_hal_conf.h`, `cs_cube_g474_board.c`, `system_stm32g4xx.c` aligned to working ARM build
+5. **Full documentation set committed** — all docs/ files staged and pushed including this audit, architecture, master-plan, deployment guide, operations runbook, roadmap, and implementation walkthrough
+6. **Contracts package.json and tsconfig updated** — workspace dependency and TypeScript path alignment
+7. **`clusterStoreDev.md` committed** — product description and layer-by-layer reference
+
+### Still Open From This Audit
+
+1. `mosquitto.exe` not installed on this host
+2. Real MQTT CA certificate and credentials absent
+3. CAN adapter not connected to real node hardware
+4. Modbus inverter register map not proven
+5. LTE modem outage and replay not exercised on real modem
+6. STM32 images not yet flashed or validated on hardware
+7. Firmware runtime convergence (portable `lib/` ↔ STM32 image entry points) still incomplete

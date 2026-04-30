@@ -764,6 +764,14 @@ export class ModbusTcpGridInverterPort implements GridInverterPort {
     }
 
     const scaledValue = config.scale ? Number(value) * config.scale : Number(value);
+    if (config.type === "u32" || config.type === "i32") {
+      await this.writeMultipleRegisters(
+        config.address,
+        encode32BitRegisterWords(Math.round(scaledValue), config)
+      );
+      return;
+    }
+
     await this.writeSingleRegister(
       config.address,
       encodeNumericRegisterValue(Math.round(scaledValue), config)
@@ -797,6 +805,25 @@ export class ModbusTcpGridInverterPort implements GridInverterPort {
     const response = await this.sendRequest(pdu);
     if (response.readUInt8(0) !== 0x06) {
       throw new Error(`Unexpected Modbus write response: ${String(response.readUInt8(0))}`);
+    }
+  }
+
+  private async writeMultipleRegisters(
+    address: number,
+    values: readonly number[]
+  ): Promise<void> {
+    const byteCount = values.length * 2;
+    const pdu = Buffer.alloc(6 + byteCount);
+    pdu.writeUInt8(0x10, 0);
+    pdu.writeUInt16BE(address, 1);
+    pdu.writeUInt16BE(values.length, 3);
+    pdu.writeUInt8(byteCount, 5);
+    for (let i = 0; i < values.length; i++) {
+      pdu.writeUInt16BE((values[i] ?? 0) & 0xffff, 6 + i * 2);
+    }
+    const response = await this.sendRequest(pdu);
+    if (response.readUInt8(0) !== 0x10) {
+      throw new Error(`Unexpected Modbus write-multiple response: ${String(response.readUInt8(0))}`);
     }
   }
 
@@ -909,15 +936,21 @@ function encodeNumericRegisterValue(
   value: number,
   config: NumericRegisterFieldConfig
 ): number {
-  if (config.type === "u32" || config.type === "i32") {
-    throw new Error("32-bit Modbus writes are not yet supported by this adapter.");
-  }
-
   if (config.type === "i16" && value < 0) {
     return 0x10000 + value;
   }
 
   return value;
+}
+
+function encode32BitRegisterWords(
+  value: number,
+  config: NumericRegisterFieldConfig
+): [number, number] {
+  const u32 = config.type === "i32" ? (value | 0) >>> 0 : value >>> 0;
+  const msw = (u32 >>> 16) & 0xffff;
+  const lsw = u32 & 0xffff;
+  return config.wordOrder === "lsw-first" ? [lsw, msw] : [msw, lsw];
 }
 
 class CommandGridInverterPort implements GridInverterPort {
