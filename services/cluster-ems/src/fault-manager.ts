@@ -1,5 +1,7 @@
 import type { ClusterAlert, ClusterFaultRecord, NodeStatusFrame } from "@clusterstore/contracts";
 
+const MAX_ACTIVE_INCIDENTS = 256;
+
 interface FaultIncidentState {
   record: ClusterFaultRecord;
 }
@@ -68,6 +70,9 @@ export class FaultManager {
     for (const [key, record] of observed) {
       const existing = this.activeIncidents.get(key);
       if (!existing) {
+        if (this.activeIncidents.size >= MAX_ACTIVE_INCIDENTS) {
+          continue;
+        }
         this.activeIncidents.set(key, { record });
         alerts.push({
           id: alertId(key, "opened", timestamp),

@@ -1088,6 +1088,99 @@ test("Daemon config loaders resolve environment placeholders and numeric overrid
   }
 });
 
+test("EMS watchdog triggers fail-safe when runCycle throws an unhandled exception", async () => {
+  const runtime = createEmsRuntime();
+  const originalRead = runtime.inverter.readState.bind(runtime.inverter);
+  runtime.inverter.readState = async () => {
+    throw new Error("Inverter bus fault");
+  };
+
+  try {
+    await runtime.controller.runCycle();
+    assert.fail("Expected runCycle to throw");
+  } catch (error) {
+    assert.match(error.message, /Inverter bus fault/);
+  }
+
+  assert.equal(runtime.watchdog.failSafeReasons.length, 1);
+  assert.match(runtime.watchdog.failSafeReasons[0], /Inverter bus fault/);
+  assert.ok(runtime.journal.events.some((event) => event.kind === "ems.fail_safe"));
+
+  runtime.inverter.readState = originalRead;
+});
+
+test("Bridge replays all buffered messages in order when LTE recovers after outage", async () => {
+  const runtime = createBridgeRuntime();
+  await runtime.bridge.bindCommandSubscription();
+
+  await runtime.bridge.publishCycle();
+  const onlineCount = runtime.mqtt.messages.length;
+  assert.ok(onlineCount >= 1, "Should publish when online");
+
+  runtime.lte.online = false;
+  runtime.clock.advanceMs(1_000);
+  await runtime.emsRuntime.controller.runCycle();
+  await runtime.bridge.publishCycle();
+  runtime.clock.advanceMs(1_000);
+  await runtime.emsRuntime.controller.runCycle();
+  await runtime.bridge.publishCycle();
+  assert.ok(runtime.buffer.pending.length >= 2, "Should buffer two cycles while offline");
+
+  runtime.lte.online = true;
+  runtime.clock.advanceMs(1_000);
+  await runtime.bridge.publishCycle();
+  assert.equal(runtime.buffer.pending.length, 0, "Buffer should drain on reconnect");
+  assert.ok(
+    runtime.mqtt.messages.length > onlineCount,
+    "Should have replayed buffered messages after reconnect"
+  );
+});
+
+test("Bridge deduplicates commands with the same idempotency key on reconnect", async () => {
+  const runtime = createBridgeRuntime();
+  await runtime.bridge.bindCommandSubscription();
+
+  const command = {
+    id: "cmd-idem-001",
+    idempotencyKey: "idem-key-001",
+    sequence: 1,
+    type: "set_maintenance_mode",
+    createdAt: runtime.clock.now().toISOString(),
+    expiresAt: new Date(runtime.clock.now().getTime() + 60_000).toISOString(),
+    requestedBy: "service@test",
+    target: {
+      siteId: "site-alpha",
+      clusterId: "cluster-01"
+    },
+    authorization: {
+      tokenId: "token-idem-001",
+      role: "service",
+      scopes: ["cluster:set_maintenance_mode"],
+      issuedAt: runtime.clock.now().toISOString(),
+      expiresAt: new Date(runtime.clock.now().getTime() + 60_000).toISOString()
+    },
+    payload: {
+      enabled: true
+    }
+  };
+
+  await runtime.mqtt.emit(
+    "cluster/site-alpha/cluster-01/cmd",
+    JSON.stringify(wrapCommand(runtime.clock.now().toISOString(), command))
+  );
+
+  const afterFirst = runtime.commandLedger.acks.map((ack) => ack.status);
+  assert.deepEqual(afterFirst, ["accepted", "completed"], "First delivery should succeed");
+
+  await runtime.mqtt.emit(
+    "cluster/site-alpha/cluster-01/cmd",
+    JSON.stringify(wrapCommand(runtime.clock.now().toISOString(), command))
+  );
+
+  const afterSecond = runtime.commandLedger.acks.map((ack) => ack.status);
+  assert.equal(afterSecond[afterSecond.length - 1], "duplicate", "Second delivery should be deduplicated");
+});
+
 let failures = 0;
 for (const testCase of testCases) {
   try {

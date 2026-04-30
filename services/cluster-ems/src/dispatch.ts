@@ -102,6 +102,20 @@ export function allocateCurrent(request: DispatchRequest): DispatchAllocation[] 
     distributableCurrentA -= assignedThisRound;
   }
 
+  if (distributableCurrentA > 0) {
+    const eligible = remaining
+      .filter((entry) => !entry.capped)
+      .sort((a, b) => a.currentA - b.currentA);
+    if (eligible.length > 0) {
+      const target = eligible[0];
+      const headroom = request.maxCurrentPerNodeA - target.currentA;
+      const assign = Math.min(distributableCurrentA, headroom);
+      if (assign > 0) {
+        target.currentA += assign;
+      }
+    }
+  }
+
   return remaining.map((entry) => ({
     nodeId: entry.node.nodeId,
     nodeAddress: entry.node.nodeAddress,

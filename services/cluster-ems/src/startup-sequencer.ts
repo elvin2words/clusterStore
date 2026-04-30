@@ -217,7 +217,7 @@ export class StartupSequencer {
         );
       }
 
-      if (nowMs - (this.phaseEnteredAtMs ?? nowMs) > this.config.startup.prechargeTimeoutMs) {
+      if (this.phaseElapsedMs(nowMs) > this.config.startup.prechargeTimeoutMs) {
         return this.failedPlan(
           timestamp,
           nodes,
@@ -263,7 +263,7 @@ export class StartupSequencer {
         this.admittedNodeIds.add(primary.nodeId);
         this.transition("admit_nodes", nowMs);
       } else if (
-        nowMs - (this.phaseEnteredAtMs ?? nowMs) >
+        this.phaseElapsedMs(nowMs) >
         this.config.startup.contactorSettleTimeoutMs
       ) {
         return this.failedPlan(
@@ -344,7 +344,7 @@ export class StartupSequencer {
             this.admittedNodeIds.add(candidate.nodeId);
             this.currentCandidateNodeId = undefined;
           } else if (
-            nowMs - (this.phaseEnteredAtMs ?? nowMs) >
+            this.phaseElapsedMs(nowMs) >
             this.config.startup.contactorSettleTimeoutMs
           ) {
             return this.failedPlan(
@@ -424,7 +424,7 @@ export class StartupSequencer {
               : buildCommand(node, this.config.supervisionTimeoutMs, commandSequence)
         );
       } else if (
-        nowMs - (this.phaseEnteredAtMs ?? nowMs) >
+        this.phaseElapsedMs(nowMs) >
         this.config.startup.balancingTimeoutMs
       ) {
         return this.failedPlan(
@@ -513,6 +513,10 @@ export class StartupSequencer {
       syntheticFaults,
       "Startup entered a failed state."
     );
+  }
+
+  private phaseElapsedMs(nowMs: number): number {
+    return nowMs - (this.phaseEnteredAtMs ?? nowMs);
   }
 
   private transition(nextPhase: StartupPhase, nowMs: number): void {

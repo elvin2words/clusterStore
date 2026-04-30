@@ -229,6 +229,19 @@ export class ClusterEmsController {
     const timestamp = this.dependencies.clock.now().toISOString();
     const issues = this.validateRemoteCommand(command);
     if (issues.length > 0) {
+      await this.dependencies.journal.record({
+        siteId: this.dependencies.config.siteId,
+        clusterId: this.dependencies.config.clusterId,
+        timestamp,
+        kind: "command.rejected",
+        severity: "warning",
+        message: `Remote command ${command.type} rejected: ${issues.join(" ")}`,
+        metadata: {
+          commandId: command.id,
+          requestedBy: command.requestedBy,
+          issues
+        }
+      });
       return makeCommandAck(
         command,
         "rejected",
@@ -388,6 +401,7 @@ export class ClusterEmsController {
     if (command.type === "force_charge") {
       const currentA = Number(command.payload.currentA ?? 0);
       if (
+        !Number.isFinite(currentA) ||
         currentA <= 0 ||
         currentA > this.dependencies.config.remoteCommands.maxChargeOverrideCurrentA
       ) {
@@ -398,6 +412,7 @@ export class ClusterEmsController {
     if (command.type === "force_discharge") {
       const currentA = Number(command.payload.currentA ?? 0);
       if (
+        !Number.isFinite(currentA) ||
         currentA <= 0 ||
         currentA >
           this.dependencies.config.remoteCommands.maxDischargeOverrideCurrentA

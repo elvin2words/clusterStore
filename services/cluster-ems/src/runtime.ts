@@ -885,7 +885,9 @@ export class ModbusTcpGridInverterPort implements GridInverterPort {
           const exceptionCode = packet.readUInt8(8);
           finalize(() => {
             rejectPromise(
-              new Error(`Modbus exception ${String(exceptionCode)} for function ${String(functionCode)}`)
+              new Error(
+                `Modbus exception: ${modbusExceptionName(exceptionCode)} (0x${exceptionCode.toString(16).padStart(2, "0")}) for function 0x${(functionCode & 0x7f).toString(16).padStart(2, "0")}`
+              )
             );
           });
           return;
@@ -907,6 +909,21 @@ export class ModbusTcpGridInverterPort implements GridInverterPort {
       });
     });
   }
+}
+
+function modbusExceptionName(code: number): string {
+  const names: Record<number, string> = {
+    0x01: "Illegal Function",
+    0x02: "Illegal Data Address",
+    0x03: "Illegal Data Value",
+    0x04: "Server Device Failure",
+    0x05: "Acknowledge",
+    0x06: "Server Device Busy",
+    0x08: "Memory Parity Error",
+    0x0a: "Gateway Path Unavailable",
+    0x0b: "Gateway Target Device Failed to Respond"
+  };
+  return names[code] ?? "Unknown Exception";
 }
 
 function decodeNumericWords(

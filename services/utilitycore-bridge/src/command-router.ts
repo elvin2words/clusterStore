@@ -118,11 +118,15 @@ export function validateRemoteCommand(
     issues.push("authorization.issuedAt must be before authorization.expiresAt.");
   }
 
-  if (
-    (command.type === "force_charge" || command.type === "force_discharge") &&
-    typeof payload.currentA !== "number"
-  ) {
-    issues.push("Force charge/discharge commands require payload.currentA.");
+  if (command.type === "force_charge" || command.type === "force_discharge") {
+    const currentA = payload.currentA;
+    if (
+      typeof currentA !== "number" ||
+      !Number.isFinite(currentA) ||
+      currentA <= 0
+    ) {
+      issues.push("Force charge/discharge payload.currentA must be a finite positive number.");
+    }
   }
 
   if (

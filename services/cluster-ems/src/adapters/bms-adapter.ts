@@ -103,7 +103,7 @@ export class OverlayBmsAdapter implements CanBusPort {
   }
 
   public async readDiagnostics(): Promise<NodeDiagnosticFrame[]> {
-    const snapshots = await this.readOrReuseSnapshots();
+    const snapshots = await this.assetPort.readAssets();
     return snapshots.map((snapshot) => normalizeOverlayDiagnostic(snapshot));
   }
 

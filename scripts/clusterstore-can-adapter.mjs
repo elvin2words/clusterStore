@@ -127,6 +127,24 @@ async function appendJsonLine(filePath, value) {
   await appendFile(filePath, `${JSON.stringify(value)}\n`, "utf8");
 }
 
+async function isNodeAlreadyIsolated(isolatesPath, nodeId) {
+  try {
+    const content = await readFile(isolatesPath, "utf8");
+    return content.split("\n").some((line) => {
+      try {
+        return JSON.parse(line).nodeId === nodeId;
+      } catch {
+        return false;
+      }
+    });
+  } catch (error) {
+    if (error && typeof error === "object" && error.code === "ENOENT") {
+      return false;
+    }
+    throw error;
+  }
+}
+
 async function readJsonFromStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -178,10 +196,13 @@ export async function executeCanAdapterCommand(configPath, command, input) {
         throw new Error("Expected input with a nodeId property for isolate-node.");
       }
       if (config.isolatesPath) {
-        await appendJsonLine(config.isolatesPath, {
-          timestamp: new Date().toISOString(),
-          nodeId: input.nodeId
-        });
+        const alreadyIsolated = await isNodeAlreadyIsolated(config.isolatesPath, input.nodeId);
+        if (!alreadyIsolated) {
+          await appendJsonLine(config.isolatesPath, {
+            timestamp: new Date().toISOString(),
+            nodeId: input.nodeId
+          });
+        }
       }
       return undefined;
     default:
